@@ -10,8 +10,8 @@ ENV/
 .venv
 
 # Results and outputs
-results/
-*.png
+# results/  # Commented out to allow pushing results to GitHub
+# *.png     # Commented out to allow pushing PNG results
 *.jpg
 *.pdf
 *.csv
