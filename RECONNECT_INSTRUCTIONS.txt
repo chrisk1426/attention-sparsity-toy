@@ -1,0 +1,34 @@
+RECONNECT INSTRUCTIONS
+======================
+
+When you reopen your laptop:
+
+1. SSH back into the server
+
+2. Check if code is still running:
+   ps aux | grep "python.*main.py" | grep -v grep
+
+3. Reattach to tmux session to see output:
+   tmux attach -s spectral
+
+4. If code finished, check results:
+   ls -la /scratch2/f006j44/attention_sparsity_toy/attention-sparsity-toy/results/
+
+5. View the output plots:
+   - results/qk_eigenvalue_distribution.png
+   - results/ov_eigenvalue_distribution.png
+
+6. If tmux session is gone, check if results exist:
+   cat /scratch2/f006j44/attention_sparsity_toy/attention-sparsity-toy/results/*.png
+
+TMUX COMMANDS CHEAT SHEET
+=========================
+- Attach to session:     tmux attach -s spectral
+- Detach (keep running): Ctrl+B, then D
+- List sessions:         tmux ls
+- Kill session:          tmux kill-session -t spectral
+
+ESTIMATED COMPLETION
+====================
+Started: ~22:00
+Expected finish: ~23:00 - 23:30 (1-1.5 hours total)

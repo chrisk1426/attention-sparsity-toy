@@ -44,12 +44,3 @@ Objective: Answer specific research questions regarding reasoning and evolution.
 • Identify 'Thinking' Heads: Which specific heads evolved the most unique signatures?
 • Interpret Eigenvalues: Do positive/negative values correspond to semantic scaling (e.g., Bad -> Terrible vs. Bad -> Good)?
 • Rank Analysis: Test the null hypothesis that these matrices are high-rank.
-
-
-================================================================================
-Phase 5: Bias Detection & Conclusion
-================================================================================
-Objective: Apply spectral analysis to detect specific model behaviors.
-
-• Bias Probing: Use eigenvectors to detect biases (e.g., gender correlating with career terms).
-• Conclusion: Validate if eigen-analysis is a viable tool for interpreting 'where thinking is happening' in LLMs.

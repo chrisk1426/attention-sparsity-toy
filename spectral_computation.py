@@ -23,42 +23,89 @@ class SpectralAnalyzer:
     def compute_eigen_decomposition(
         self,
         matrix: torch.Tensor,
-        k: Optional[int] = None
+        k: Optional[int] = None,
+        use_gpu: bool = True
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Compute eigenvalue decomposition of a matrix.
-        Uses GPU-accelerated operations when available.
-        
+        Uses GPU if available and use_gpu=True, otherwise falls back to CPU.
+
         Args:
             matrix: Input matrix [vocab_size, vocab_size]
             k: Number of top eigenvalues to compute (None = all)
-            
+            use_gpu: Whether to try GPU first (default True)
+
         Returns:
             eigenvalues: Eigenvalues sorted in descending order
             eigenvectors: Corresponding eigenvectors [vocab_size, k or vocab_size]
         """
-        # Ensure matrix is a torch tensor on the correct device
-        if not isinstance(matrix, torch.Tensor):
-            matrix = torch.tensor(matrix, dtype=torch.float32, device=self.device)
-        else:
-            matrix = matrix.to(self.device)
-        
+        # Try GPU first if requested
+        if use_gpu and torch.cuda.is_available():
+            try:
+                # Clear GPU cache first
+                torch.cuda.empty_cache()
+
+                # Move to GPU
+                matrix_gpu = matrix.to(self.device).float()
+
+                # Check if symmetric
+                is_symmetric = torch.allclose(matrix_gpu, matrix_gpu.T, atol=1e-6)
+
+                if is_symmetric:
+                    # Use eigh for symmetric matrices (faster)
+                    eigenvalues, eigenvectors = torch.linalg.eigh(matrix_gpu)
+                    # Sort descending
+                    idx = torch.argsort(eigenvalues, descending=True)
+                    eigenvalues = eigenvalues[idx]
+                    eigenvectors = eigenvectors[:, idx]
+                else:
+                    # Use SVD for non-symmetric
+                    U, s, Vt = torch.linalg.svd(matrix_gpu, full_matrices=False)
+                    eigenvalues = s
+                    eigenvectors = U
+
+                # Move back to CPU to free GPU memory
+                eigenvalues = eigenvalues.cpu()
+                eigenvectors = eigenvectors.cpu()
+
+                # Clear GPU memory
+                del matrix_gpu
+                torch.cuda.empty_cache()
+
+                # Select top k if specified
+                if k is not None and k < len(eigenvalues):
+                    eigenvalues = eigenvalues[:k]
+                    eigenvectors = eigenvectors[:, :k]
+
+                return eigenvalues, eigenvectors
+
+            except RuntimeError as e:
+                print(f"GPU failed ({e}), falling back to CPU...", flush=True)
+                torch.cuda.empty_cache()
+
+        # CPU fallback using numpy (more stable for large matrices)
+        matrix_np = matrix.detach().cpu().numpy().astype(np.float64)
+
         # Check if matrix is symmetric (within numerical tolerance)
-        is_symmetric = torch.allclose(matrix, matrix.T, atol=1e-6)
-        
+        is_symmetric = np.allclose(matrix_np, matrix_np.T, atol=1e-6)
+
         if is_symmetric:
             # Use eigendecomposition for symmetric matrices (faster and more accurate)
-            eigenvalues, eigenvectors = torch.linalg.eigh(matrix)
+            eigenvalues_np, eigenvectors_np = np.linalg.eigh(matrix_np)
             # Sort in descending order
-            idx = torch.argsort(eigenvalues, descending=True)
-            eigenvalues = eigenvalues[idx]
-            eigenvectors = eigenvectors[:, idx]
+            idx = np.argsort(eigenvalues_np)[::-1]
+            eigenvalues_np = eigenvalues_np[idx]
+            eigenvectors_np = eigenvectors_np[:, idx]
         else:
             # Use SVD for non-symmetric matrices
             # SVD: matrix = U @ diag(s) @ V^T
-            U, s, Vt = torch.linalg.svd(matrix, full_matrices=False)
-            eigenvalues = s
-            eigenvectors = U
+            U, s, Vt = np.linalg.svd(matrix_np, full_matrices=False)
+            eigenvalues_np = s
+            eigenvectors_np = U
+
+        # Convert back to torch tensors
+        eigenvalues = torch.from_numpy(eigenvalues_np).float()
+        eigenvectors = torch.from_numpy(eigenvectors_np).float()
         
         # Select top k if specified
         if k is not None and k < len(eigenvalues):
