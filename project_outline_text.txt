@@ -1,0 +1,55 @@
+Project Outline: Spectral Analysis of Toy Models
+
+================================================================================
+Phase 1: Theoretical Framework & Definitions
+================================================================================
+Objective: Establish the mathematical ground rules based on the 'Mathematical Framework for Transformers' (Elhage et al., 2021).
+
+1. Define the QK Circuit (The "Where"):
+   • Formula: W_QK_Full = W_E_transpose * W_QK_head * W_E
+   • Goal: Understand that this circuit provides attention scores and determines WHERE information moves (the attention pattern).
+
+2. Define the OV Circuit (The "What"):
+   • Formula: W_OV_Full = W_U * W_OV_head * W_E
+   • Goal: Understand that this circuit determines WHAT information is moved and how it affects final logits (e.g., copying or preserving information).
+
+
+================================================================================
+Phase 2: Model Selection & Data Extraction
+================================================================================
+Objective: Select specific 'toy' models to compare deep reasoning capabilities against standard behavior.
+
+• Select Model: TinyStories-33M (a reasoning-capable toy model).
+• Control Model: Use a randomly initialized version or a 1-layer version of the same model.
+• Extract Weights: Access Embedding (W_E), Unembedding (W_U), and Head weights (W_Q, W_K, W_V, W_O).
+
+
+================================================================================
+Phase 3: Spectral Computation
+================================================================================
+Objective: Perform the core mathematical operations to generate data.
+
+• Compute Full Matrices: Calculate the vocab-by-vocab matrices for both QK and OV circuits.
+• Eigen-Decomposition: Compute eigenvalues and eigenvectors.
+• Focus Area: Look for a tail-end distribution of eigenvalues at 0.
+• Density Estimation: Plot the distribution of these eigenvalues.
+
+
+================================================================================
+Phase 4: Comparative Analysis (The Core Experiment)
+================================================================================
+Objective: Answer specific research questions regarding reasoning and evolution.
+
+• Compare Signatures: Do reasoning models show a different spectral density than non-reasoning ones?
+• Identify 'Thinking' Heads: Which specific heads evolved the most unique signatures?
+• Interpret Eigenvalues: Do positive/negative values correspond to semantic scaling (e.g., Bad -> Terrible vs. Bad -> Good)?
+• Rank Analysis: Test the null hypothesis that these matrices are high-rank.
+
+
+================================================================================
+Phase 5: Bias Detection & Conclusion
+================================================================================
+Objective: Apply spectral analysis to detect specific model behaviors.
+
+• Bias Probing: Use eigenvectors to detect biases (e.g., gender correlating with career terms).
+• Conclusion: Validate if eigen-analysis is a viable tool for interpreting 'where thinking is happening' in LLMs.
